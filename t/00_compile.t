@@ -11,6 +11,8 @@ use_ok $_ for qw(
     Daje::Plugin::SQL::Script::Sql
     Daje::Plugin::Output::Table
     Daje::Plugin::Input::ConfigManager
+    Daje::Plugin::Database::Operations
+    Daje::Plugin::Database::SqlLite;
 );
 
 done_testing;
