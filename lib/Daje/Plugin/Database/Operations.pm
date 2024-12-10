@@ -13,20 +13,18 @@ sub save_hash($self, $file, $hash) {
         my $sth = $self->dbh->prepare($script);
         $sth->execute($file, $hash, $date, $hash, $date);
     };
-    die "Save hash failed '$" if $@;
-    }
+    die "Save hash failed '$@" if $@;
 }
 
 sub load_hash($self, $file_path_name) {
     my $hash;
-    try {
+    eval {
         my $script = $self->select_script();
         my $sth = $self->dbh->prepare($script);
         $sth->execute($file_path_name);
         $hash = $sth->fetch();
-    } catch ($e) {
-        die "Could not load hash '$e";
     };
+    die "Could not load hash '$$@" if $@;
 
     return $hash;
 }

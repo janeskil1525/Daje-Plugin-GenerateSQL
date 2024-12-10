@@ -1,5 +1,5 @@
 package Daje::Plugin::Input::ConfigManager;
-use Mojo::Base -signatures;
+use Mojo::Base -base, -signatures;
 
 
 our $VERSION = "0.01";
@@ -17,50 +17,48 @@ has 'filetype' ;
 has 'changed_files' ;
 has 'change';
 
-sub save_new_hash($file) {
+sub save_new_hash($self, $file) {
     my $path = Mojo::File->new($file);
-    my $new_hash = $change->load_new_hash($path);
-    my $dbh = Daje::Generate::Database::SqlLite->new(path => $path)->get_dbh();
-    my $operations = Daje::Generate::Database::Operations->new(dbh => $dbh);
+    my $new_hash = $self->change->load_new_hash($path);
+    my $dbh = Daje::Plugin::Database::SqlLite->new(path => $path)->get_dbh();
+    my $operations = Daje::Plugin::Database::Operations->new(dbh => $dbh);
     $operations->save_hash($path->dirname . '/' . $path->basename, $new_hash);
 
     return 1;
 }
 
-sub load_json($file) {
+sub load_json($self, $file) {
     my $context;
-    try {
+    eval {
         $context =  Mojo::File->new($file)->slurp;
-    } catch ($e) {
-        die "load_json failed '$e";
     };
+    die "load_json failed '$@" if $@;
 
     return from_json($context);
 }
 
-sub load_changed_files () {
+sub load_changed_files ($self) {
     my ($dbh, $operations, $path) = $self->_load_objects();
-    try {
-        $files = $path->list();
-    } catch ($e) {
-        die "Files could not be loaded: $e";
+    eval {
+        $self->files($path->list());
     };
+    die "Files could not be loaded: $@" if $@;
 
-    my $length = scalar @{$files};
+    my $length = scalar @{$self->files};
     for (my $i = 0; $i < $length; $i++) {
-        my $old_hash = $operations->load_hash(@{$files}[$i]->dirname . '/' . @{$files}[$i]->basename);
-        if ($change->is_file_changed( @{$files}[$i], $old_hash)) {
-            push @{$changed_files}, @{$files}[$i]->dirname . '/' . @{$files}[$i]->basename;
+        my $old_hash = $operations->load_hash(@{$self->files}[$i]->dirname . '/' . @{$self->files}[$i]->basename);
+        if ($self->change->is_file_changed( @{$self->files}[$i], $old_hash)) {
+            push @{$$self->changed_files}, @{$self->files}[$i]->dirname . '/' . @{$self->files}[$i]->basename;
         }
     }
     return;
 }
 
-sub _load_objects() {
-    my $path = Mojo::File->new($source_path);
-    $change = Daje::Tools::Filechanged->new();
-    my $dbh = Daje::Generate::Database::SqlLite->new(path => $path)->get_dbh();
-    my $operations = Daje::Generate::Database::Operations->new(dbh => $dbh);
+sub _load_objects($self) {
+    my $path = Mojo::File->new($self->source_path);
+    $self->change(Daje::Tools::Filechanged->new());
+    my $dbh = Daje::Plugin::Database::SqlLite->new(path => $path)->get_dbh();
+    my $operations = Daje::Plugin::Database::Operations->new(dbh => $dbh);
 
     return ($dbh, $operations, $path);
 }

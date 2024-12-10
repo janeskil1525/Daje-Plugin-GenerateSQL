@@ -1,5 +1,5 @@
 package Daje::Plugin::SQL::Base::Common;
-use Mojo::Base -signatures;
+use Mojo::Base -base, -signatures;
 
 has 'json';
 has 'template';
@@ -9,7 +9,7 @@ has 'version';
 
 our $VERSION = "0.01";
 
-method shift_section ($self, $array) {
+sub shift_section ($self, $array) {
     my $result = {};
     my $test = ref $array;
     if (ref $array eq 'ARRAY') {
@@ -17,7 +17,7 @@ method shift_section ($self, $array) {
     }
     return $result;
 }
-method set_sql($self, $sqlin) {
+sub set_sql($self, $sqlin) {
     $self->sql($sqlin);
 }
 1;

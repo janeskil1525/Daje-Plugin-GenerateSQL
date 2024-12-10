@@ -1,5 +1,5 @@
 package Daje::Plugin::SQL::Manager;
-use Mojo::Base 'Daje::Plugin::Sql::Base::Common', -signatures;
+use Mojo::Base 'Daje::Plugin::SQL::Base::Common', -signatures;
 
 use Daje::Plugin::SQL::Script::Fields;
 use Daje::Plugin::SQL::Script::Index;
