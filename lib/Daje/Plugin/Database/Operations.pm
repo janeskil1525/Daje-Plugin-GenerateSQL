@@ -1,5 +1,5 @@
 package Daje::Plugin::Database::Operations;
-use Mojo::Base -signatures;
+use Mojo::Base -base, -signatures;
 
 has 'dbh';
 
@@ -7,13 +7,13 @@ our $VERSION = '0.01';
 
 
 sub save_hash($self, $file, $hash) {
-    try {
+    eval {
         my $date = localtime();
         my $script = $self->save_script();
         my $sth = $self->dbh->prepare($script);
         $sth->execute($file, $hash, $date, $hash, $date);
-    } catch ($e) {
-        die "Save hash failed '$e";
+    };
+    die "Save hash failed '$" if $@;
     }
 }
 

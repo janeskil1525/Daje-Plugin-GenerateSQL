@@ -1,5 +1,5 @@
 package Daje::Plugin::Database::SqlLite;
-use Mojo::Base -signatures;
+use Mojo::Base -base, -signatures;
 
 use DBI;
 
@@ -8,10 +8,10 @@ has 'data_dir';
 has 'path';
 
 sub get_dbh($self) {
-    unless (defined $dbh) {
+    unless (defined $self->dbh) {
         $self->_open_database();
     }
-    return $dbh;
+    return $self->dbh();
 }
 
 sub _open_database($self) {
@@ -22,31 +22,33 @@ sub _open_database($self) {
 
 sub _add_table($self){
     my $script = $self->_table_script();
-    my $sth = $dbh->prepare($script) or die "Couldn't create table: " . $dbh->errstr;;
-    $sth->execute() or die "Couldn't create table: " . $dbh->errstr;;;
+    my $sth = $self->dbh->prepare($script)
+        or die "Couldn't create table: " . $self->dbh->errstr;
+    $sth->execute()
+        or die "Couldn't create table: " . $self->dbh->errstr;
 }
 
 sub _open($self){
-    my $dbfile = $data_dir .'/generate.db';
-    $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","",
+    my $dbfile = $self->data_dir .'/generate.db';
+    my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","",
         {
             PrintError => 1, AutoCommit => 1
         }
     ) or die $DBI::errstr;
+
+    $self->dbh($dbh);
 }
 
 sub _datadir($self) {
     my $new = 0;
-    try {
-        $data_dir = $path->dirname . "/data";
-        if (!(-d $data_dir)) {
-            mkdir("$data_dir", 0700);
+    eval {
+        $self->data_dir = $self->path->dirname . "/data";
+        if (!(-d $self->data_dir)) {
+            mkdir("$self->data_dir", 0700);
             $new = 1;
         }
-    } catch ($e) {
-        die "Failed creating datadir '$e";
     };
-
+    die "Failed creating datadir '$@" if $@;
     return $new
 }
 
