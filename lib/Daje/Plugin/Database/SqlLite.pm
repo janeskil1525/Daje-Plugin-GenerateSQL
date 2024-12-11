@@ -42,7 +42,7 @@ sub _open($self){
 sub _datadir($self) {
     my $new = 0;
     eval {
-        $self->data_dir = $self->path->dirname . "/data";
+        $self->data_dir($self->path->dirname . "/data");
         if (!(-d $self->data_dir)) {
             mkdir("$self->data_dir", 0700);
             $new = 1;

@@ -1,5 +1,5 @@
 package Daje::Plugin::Output::Table;
-use Mojo::Base  -signatures;
+use Mojo::Base  -base, -signatures;
 
 use Mojo::File;
 
@@ -13,7 +13,7 @@ sub save_file($self) {
 
     my $filename = $self->create_new_filename();
     open (my $fh, ">", $filename) or die "Could not open file '$filename";
-    print $fh $sql;
+    print $fh $self->sql();
     close $fh;
 
     return;
@@ -21,12 +21,11 @@ sub save_file($self) {
 
 sub create_new_filename($self) {
     my $filename;
-    try {
-        $filename = $config->{PATH}->{sql_target_dir} . Mojo::File->new($self->file)->basename();
+    eval {
+        $filename = $self->config->{PATH}->{sql_target_dir} . Mojo::File->new($self->file)->basename();
         $filename =~ s/json/sql/ig;
-    } catch ($e) {
-        die "create_new_filename failed '$e'";
     };
+    die "create_new_filename failed '$@'" if $@;
 
     return $filename;
 }

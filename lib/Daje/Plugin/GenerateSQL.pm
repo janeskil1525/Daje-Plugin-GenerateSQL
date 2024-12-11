@@ -1,5 +1,5 @@
 package Daje::Plugin::GenerateSQL;
-use Mojo::Base -signatures;
+use Mojo::Base -base, -signatures;
 
 # Daje::Plugin::GenerateSQL - It's new $module
 #
@@ -36,78 +36,73 @@ our $VERSION = "0.01";
 has 'config_path';
 has 'config_manager';
 
-sub process () {
+sub process ($self) {
 
     $self->_load_config();
     my $files_list = $self->_load_file_list();
     my $length = scalar @{$files_list};
     for (my $i = 0; $i < $length; $i++) {
         if ($self->_process_sql(@{$files_list}[$i])) {
-            $config_manager->save_new_hash(@{$files_list}[$i]);
+            $self->config_manager->save_new_hash(@{$files_list}[$i]);
         }
     }
 
     return;
 }
 
-sub _process_sql($file) {
+sub _process_sql($self, $file) {
     my $sql = "";
-    try {
+    eval {
         my $table = $self->_load_table($file);
         $table->generate_table();
         $sql = $table->sql();
-    } catch ($e) {
-        die "Create sql failed '$e'";
     };
+    die "Create sql failed '$@'" if $@;
 
-    try {
-        Daje::Generate::Output::Sql::SqlManager->new(
+    eval {
+        Daje::Plugin::Output::Table->new(
             config => $self->config,
             file   => $file,
             sql    => $sql,
         )->save_file();
-    } catch ($e) {
-        die "Could not create output '$e'";
     };
+    die "Could not create output '$@'"  if $@;
 
     return 1;
 }
 
-sub _load_table($file) {
+sub _load_table($self, $file) {
 
-    my $json = $config_manager->load_json($file);
+    my $json = $self->config_manager->load_json($file);
     my $template = $self->_load_templates(
         'Daje::Generate::Templates::Sql',
         "table,foreign_key,index,section,file"
     );
     my $table;
-    try {
-        $table = Daje::Generate::Sql::SqlManager->new(
+    eval {
+        $table = Daje::Plugin::SQL::Manager->new(
             template => $template,
             json     => $json,
         );
-    } catch ($e) {
-        die "process_sql failed '$e";
     };
+    die "process_sql failed '$@" if $@;
 
     return $table;
 }
 
+sub _load_file_list($self) {
 
-
-sub _load_file_list() {
-
-    try {
-        $config_manager = Daje::Generate::Input::Sql::ConfigManager->new(
+    eval {
+        my $config_manager = Daje::Plugin::Input::ConfigManager->new(
             source_path => $self->config->{PATH}->{sql_source_dir},
             filetype    => '*.json'
         );
         $config_manager->load_changed_files();
-    } catch ($e) {
-        die "could not load changed files '$e";
+        $self->config_manager($config_manager);
     };
+    die "could not load changed files '$@" if $@;
 
-    return $config_manager->changed_files();
+    return $self->config_manager->changed_files();
 }
 
 

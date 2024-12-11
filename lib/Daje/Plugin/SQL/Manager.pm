@@ -82,7 +82,7 @@ sub create_table_sql($self, $table) {
 }
 
 sub create_sql($self, $json, $tablename) {
-    my $sql_stmt = Daje::Plugin::SQL::SqlManager::Sql->new(
+    my $sql_stmt = Daje::Plugin::SQL::Script::Sql->new(
         json      => $json,
         template  => $self->template,
         tablename => $tablename,
@@ -125,7 +125,7 @@ sub create_fields($self, $json) {
 sub create_index($self, $json) {
     my $test = 1;
     my $template = $self->template;
-    my $index = Daje::Plugin::SQL:Script::Index->new(
+    my $index = Daje::Plugin::SQL::Script::Index->new(
         json      => $json,
         template  => $template,
         tablename => $json->{name},

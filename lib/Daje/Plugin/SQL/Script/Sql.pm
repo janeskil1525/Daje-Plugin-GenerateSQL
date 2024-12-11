@@ -17,7 +17,7 @@ sub create_sql($self) {
 
         match ($type : eq) {
             case('insert') {
-                $template =~ s/<<tablename>>/$tablename/ig;
+                $template =~ s/<<tablename>>/$self->tablename()/ig;
                 $template =~ s/<<fields>>/@{$json}[$i]->{fields}/ig;
                 $template =~ s/<<values>>/@{$json}[$i]->{values}/ig;
             }
