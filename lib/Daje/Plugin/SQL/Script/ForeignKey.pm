@@ -11,7 +11,7 @@ sub create_foreign_keys($self) {
     my $fkeys = '';
     $self->templates->{template_fkey} = "";
     $self->templates->{template_ind} = "";
-    try {
+    eval {
         my $fields = $self->json->{fields};
         foreach my $key (sort keys %{$fields}) {
             if (index($key,'_fkey') > -1) {
@@ -22,9 +22,8 @@ sub create_foreign_keys($self) {
                 $self->created = 1;
             }
         }
-    } catch ($e) {
-        die "Foreign keys could not be created $e";
-    };
+    } ;
+    die "Foreign keys could not be created '$@'" if $@;
     return;
 }
 
@@ -34,10 +33,10 @@ sub get_templates($self, $key) {
     $template_fkey =~ s/<<referenced_table>>/$referenced_table/ig;
     my $template_ind = $self->template->get_data_section('index');
     $template_ind =~ s/<<type>>//ig;
-    $template_ind =~ s/<<table>>/$tablename/ig;
+    $template_ind =~ s/<<table>>/$self->tablename/ig;
     $template_ind =~ s/<<field_names>>/$key/ig;
     $template_ind =~ s/<<fields>>/$key/ig;
-    $created = 1;
+    $self->created(1);
 
     return ($template_fkey,$template_ind);
 }

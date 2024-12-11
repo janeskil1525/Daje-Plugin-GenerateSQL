@@ -7,14 +7,13 @@ our $VERSION = "0.01";
 
 sub create_fields($self){
     my $field = '';
-    try {
+    eval {
         my $fields = $self->json->{fields};
         foreach my $key (sort keys %{$fields}) {
             $field .= $key . ' ' . $fields->{$key} . $self->get_defaults($fields->{$key}) . ',';
         }
-    } catch ($e) {
-        die "Fields could not be generated $e";
     };
+    die "Fields could not be generated '$@'" if $@;
 
     $self->set_sql($field);
 
