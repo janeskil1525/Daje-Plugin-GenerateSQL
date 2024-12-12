@@ -15,7 +15,7 @@ use Daje::Plugin::GenerateSQL;
      Daje::Plugin::Output::Table
      Daje::Plugin::Input::ConfigManager
      Daje::Plugin::Database::Operations
-     Daje::Plugin::Database::SqlLite;
+     Daje::Plugin::Database::SqlLite
  );
 
 #ok (1==1);
